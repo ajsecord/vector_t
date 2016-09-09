@@ -2,6 +2,7 @@
 #define VECTOR_VECTOR_H
 
 #include <stdbool.h>
+#include <stddef.h>
 
 #include "vector_environment.h"
 
@@ -24,13 +25,13 @@ VECTOR_EXTERN size_t vector_size(const vector_t *vector);
 VECTOR_EXTERN size_t vector_max_size(const vector_t *vector);
 
 VECTOR_EXTERN size_t vector_capacity(const vector_t *vector);
-VECTOR_EXTERN bool vector_reserve(const vector_t vector, const size_t capacity);
+VECTOR_EXTERN void vector_reserve(vector_t *vector, const size_t capacity);
 
 VECTOR_EXTERN void vector_clear(vector_t *vector);
 VECTOR_EXTERN void vector_resize(vector_t *vector, const size_t size);
 VECTOR_EXTERN void vector_size_to_fit(vector_t *vector);
 
-VECTOR_EXTERN size_t vector_get(const vector_t *vector, const size_t index);
+VECTOR_EXTERN void *vector_get(const vector_t *vector, const size_t index);
 VECTOR_EXTERN void vector_set(vector_t *vector, const size_t index, const void *value);
 
 VECTOR_EXTERN void *vector_front(const vector_t *vector);
