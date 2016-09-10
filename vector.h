@@ -21,6 +21,7 @@ VECTOR_EXTERN vector_t *vector_create_with_vector(const vector_t *other);
 VECTOR_EXTERN void vector_destroy(vector_t *vector);
 
 VECTOR_EXTERN size_t vector_member_size(const vector_t *vector);
+VECTOR_EXTERN bool vector_empty(const vector_t *vector);
 VECTOR_EXTERN size_t vector_size(const vector_t *vector);
 VECTOR_EXTERN size_t vector_max_size(const vector_t *vector);
 

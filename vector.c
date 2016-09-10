@@ -84,6 +84,11 @@ size_t vector_member_size(const vector_t *vector) {
     return vector->member_size;
 }
 
+bool vector_empty(const vector_t *vector) {
+    assert(vector);
+    return vector->size == 0;
+}
+
 size_t vector_size(const vector_t *vector) {
     assert(vector);
     return vector->size;
@@ -179,16 +184,22 @@ void vector_insert(vector_t *vector, const size_t pos, const void *value) {
     assert(vector && value && pos <= vector->size);
     vector_reserve(vector, vector->size + 1);
     if (pos <= vector->size) {
-        memmove(element(vector, pos + 1), element(vector, pos), vector->size * vector->member_size);
-        memcpy(element(vector, pos), value, vector->member_size);
         ++vector->size;
+        const size_t byte_count = (vector->size - 1) * vector->member_size;
+        if (byte_count > 0) {
+            memmove(element(vector, pos + 1), element(vector, pos), byte_count);
+        }
+        memcpy(element(vector, pos), value, vector->member_size);
     }     
 }
 
 void vector_erase(vector_t *vector, const size_t pos) {
     assert(vector && pos <= vector->size);
     if (pos < vector->size) {
-        memmove(element(vector, pos), element(vector, pos + 1), (vector->size - 1) * vector->member_size);
+        const size_t byte_count = (vector->size - 1) * vector->member_size;
+        if (byte_count > 0) {
+            memmove(element(vector, pos), element(vector, pos + 1), byte_count);
+        }
         --vector->size;
     }
 }
