@@ -164,9 +164,8 @@ void *vector_data(const vector_t *vector) {
 
 void vector_push_back(vector_t *vector, const void* value) {
     assert(vector && value);
-    vector_reserve(vector, vector->size + 1);
-    memcpy(element(vector, vector->size), value, vector->member_size);
-    ++vector->size;
+    vector_reserve(vector, ++vector->size);
+    memcpy(element(vector, vector->size - 1), value, vector->member_size);
 }
 
 void vector_pop_back(vector_t *vector) {
