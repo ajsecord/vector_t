@@ -1,10 +1,10 @@
 /*
  Copyright 2016-present Adrian Secord. All Rights Reserved.
- 
+
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
- 
+
  http://www.apache.org/licenses/LICENSE-2.0
 
  Unless required by applicable law or agreed to in writing, software
@@ -241,7 +241,7 @@ static void test_push_back_empty() {
     vector_t *vector = vector_create(sizeof(int));
     int value = 42;
     vector_push_back(vector, &value);
-    
+
     assert_invariants(vector);
     assert(vector_size(vector) == 1);
     assert(*(int *)vector_get(vector, 0) == 42);
@@ -377,7 +377,7 @@ static void test_swap() {
     for (int i = 0; i < size2; ++i) {
         assert(*(int *)vector_get(vector1, i) == value2);
     }
-    
+
     assert_invariants(vector2);
     assert(vector_size(vector2) == size1);
     for (int i = 0; i < size1; ++i) {
@@ -397,7 +397,7 @@ static void test_swap_with_empty() {
 
     assert_invariants(vector1);
     assert(vector_size(vector1) == 0);
-    
+
     assert_invariants(vector2);
     assert(vector_size(vector2) == size);
     for (int i = 0; i < size; ++i) {
