@@ -188,7 +188,8 @@ void *vector_data(const vector_t *vector) {
 
 void vector_push_back(vector_t *vector, const void* value) {
     assert(vector && value);
-    vector_reserve(vector, ++vector->size);
+    const size_t new_capacity = vector_capacity_for_size(vector, ++vector->size);
+    vector_reserve(vector, new_capacity);
     memcpy(element(vector, vector->size - 1), value, vector->member_size);
 }
 
@@ -201,7 +202,8 @@ void vector_pop_back(vector_t *vector) {
 
 void vector_insert(vector_t *vector, const size_t pos, const void *value) {
     assert(vector && value && pos <= vector->size);
-    vector_reserve(vector, vector->size + 1);
+    const size_t new_capacity = vector_capacity_for_size(vector, vector->size + 1);
+    vector_reserve(vector, new_capacity);
     if (pos <= vector->size) {
         ++vector->size;
         const size_t byte_count = (vector->size - 1) * vector->member_size;
@@ -258,19 +260,30 @@ static void vector_fail(const vector_t *vector, char *format, ...) {
     abort();
 }
 
+// TODO: Expose this as an advanced global function the user can replace.
 static size_t capacity_for_size(const size_t cur_capacity,
                                 const size_t required_size,
                                 const float expansion_factor) {
-#if 1
-    return cur_capacity >= required_size ? cur_capacity : required_size;
-#else
-    size_t new_size = cur_size;
-    while (new_size < required_size) {
-        const size_t expanded_size = (size_t)(new_size * expansion_factor);
-        assert(expanded_size > new_size && "Expansion factor too small");
-        new_size = expanded_size;
+    size_t new_capacity = cur_capacity;
+    while (new_capacity < required_size) {
+        size_t expanded_capacity = (size_t)(new_capacity * expansion_factor);
+        if (expanded_capacity <= new_capacity) {
+            // This case happens when the increment is smaller than a single integer, which is
+            // expected when the current capacity is zero or very small, but it can also happen with
+            // very small expansion factors.
+            expanded_capacity = new_capacity + 1;
+        }
+        new_capacity = expanded_capacity;
     }
-    return new_size;
-#endif
+    return new_capacity;
 }
+
+#if 0
+// TODO: Expose this linear version as an example.
+static size_t capacity_for_size(const size_t cur_capacity,
+                                const size_t required_size,
+                                const float expansion_factor) {
+    return cur_capacity >= required_size ? cur_capacity : required_size;
+}
+#endif
 
