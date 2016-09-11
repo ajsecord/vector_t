@@ -16,6 +16,7 @@
 
 #include "vector.h"
 #include "vector_convenience_accessors.h"
+#include "vector_system.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -26,6 +27,35 @@ static inline void assert_invariants(const vector_t *vector) {
     assert(vector);
     assert(vector_capacity(vector) >= vector_size(vector));
     assert(vector_size(vector) <= vector_max_size(vector));
+}
+
+static bool ABORT_FUNC_CALLED = false;
+static void abort_func(const vector_t *vector, const char *message) {
+    ABORT_FUNC_CALLED = true;
+}
+
+static bool REALLOC_FUNC_CALLED = false;
+static void *realloc_func(void *ptr, size_t size) {
+    REALLOC_FUNC_CALLED = true;
+    return vector_default_global_realloc_func(ptr, size);
+}
+
+static bool FREE_FUNC_CALLED = false;
+static void free_func(void *ptr) {
+    FREE_FUNC_CALLED = true;
+    vector_default_global_free_func(ptr);
+}
+
+static bool MEMCPY_FUNC_CALLED = false;
+void *memcpy_func(void *restrict dst, const void *restrict src, size_t n) {
+    MEMCPY_FUNC_CALLED = true;
+    return vector_default_global_memcpy_func(dst, src, n);
+}
+
+static bool MEMMOVE_FUNC_CALLED = false;
+void *memmove_func(void *dst, const void *src, size_t len) {
+    MEMMOVE_FUNC_CALLED = true;
+    return vector_default_global_memmove_func(dst, src, len);
 }
 
 static void test_create() {
@@ -430,6 +460,67 @@ static void test_capacity() {
     vector_destroy(vector);
 }
 
+static void test_custom_abort_func() {
+    vector_t *vector = vector_create(sizeof(int));
+
+    ABORT_FUNC_CALLED = false;
+    vector_set_global_abort_func(abort_func);
+    vector_reserve(vector, vector_max_size(vector));  // Force an abort.
+    assert(ABORT_FUNC_CALLED == true);
+
+    vector_set_global_abort_func(vector_default_global_abort_func);
+    vector_destroy(vector);
+}
+
+static void test_custom_realloc_func() {
+    vector_t *vector = vector_create(sizeof(int));
+
+    REALLOC_FUNC_CALLED = false;
+    vector_set_global_realloc_func(realloc_func);
+    vector_reserve(vector, 100);
+    assert(REALLOC_FUNC_CALLED == true);
+
+    vector_set_global_realloc_func(vector_default_global_realloc_func);
+    vector_destroy(vector);
+}
+
+static void test_custom_free_func() {
+    vector_t *vector = vector_create(sizeof(int));
+    vector_set_global_free_func(free_func);
+
+    vector_reserve(vector, 100);
+    FREE_FUNC_CALLED = false;
+    vector_destroy(vector);
+    assert(FREE_FUNC_CALLED == true);
+
+    vector_set_global_free_func(vector_default_global_free_func);
+}
+
+static void test_custom_memcpy_func() {
+    vector_set_global_memcpy_func(memcpy_func);
+    const int value = 42;
+
+    MEMCPY_FUNC_CALLED = false;
+    vector_t *vector = vector_create_with_value(sizeof(int), 1, &value);
+    assert(MEMCPY_FUNC_CALLED == true);
+
+    vector_destroy(vector);
+    vector_set_global_memcpy_func(vector_default_global_memcpy_func);
+}
+
+static void test_custom_memmove_func() {
+    const int value = 42;
+    vector_t *vector = vector_create_with_value(sizeof(int), 1, &value);
+    vector_set_global_memmove_func(memmove_func);
+
+    MEMMOVE_FUNC_CALLED = false;
+    vector_insert(vector, 0, &value);
+    assert(MEMMOVE_FUNC_CALLED == true);
+
+    vector_set_global_memmove_func(vector_default_global_memmove_func);
+    vector_destroy(vector);
+}
+
 struct test_info_t {
     const char *name;
     test_func_t func;
@@ -474,6 +565,11 @@ int main(int argc, char *argv[]) {
         TEST_INFO_CREATE(test_expansion_factor),
         TEST_INFO_CREATE(test_capacity_empty),
         TEST_INFO_CREATE(test_capacity),
+        TEST_INFO_CREATE(test_custom_abort_func),
+        TEST_INFO_CREATE(test_custom_realloc_func),
+        TEST_INFO_CREATE(test_custom_free_func),
+        TEST_INFO_CREATE(test_custom_memcpy_func),
+        TEST_INFO_CREATE(test_custom_memmove_func),
     };
 
     const size_t num_tests = sizeof(tests) / sizeof(test_info_t);

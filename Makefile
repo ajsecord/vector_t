@@ -1,7 +1,11 @@
+SOURCES=vector.c vector_system.c
+OBJECTS=$(SOURCES:.c=.o)
+CFLAGS=-std=c99 -Wall -Werror -O0 -g
+tests: tests.o libvector.a
+	$(CC) $(CFLAGS) $^ -o $@
 
-CFLAGS=-Wall -Werror -O0 -g
-tests: tests.o vector.o
-	$(CC) $(CFLAGS) -o tests tests.o vector.o
+libvector.a: $(OBJECTS)
+	ar rcs $@ $^
 
 clean:
-	rm -f *.o tests
+	rm -f tests libvector.a $(OBJECTS)

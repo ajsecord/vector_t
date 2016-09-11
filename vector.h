@@ -22,7 +22,6 @@
 
 #include "vector_environment.h"
 
-
 /** An anonymous structure for storing a vector's state. */
 struct vector_t;
 
