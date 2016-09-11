@@ -62,5 +62,10 @@ VECTOR_EXTERN void vector_insert(vector_t *vector, const size_t pos, const void 
 VECTOR_EXTERN void vector_erase(vector_t *vector, const size_t pos);
 VECTOR_EXTERN void vector_swap(vector_t *first, vector_t *second);
 
+// Advanced
+
+VECTOR_EXTERN float vector_expansion_factor(const vector_t *vector);
+VECTOR_EXTERN void vector_set_expansion_factor(vector_t *vector, const float expansion_factor);
+VECTOR_EXTERN size_t vector_capacity_for_size(const vector_t *vector, const size_t size);
 
 #endif

@@ -28,10 +28,12 @@ struct vector_t {
     size_t member_size;
     size_t size;
     size_t capacity;
+    float expansion_factor;
     void *data;
 };
 
 static void vector_fail(const vector_t *vector, char *format, ...);
+static size_t capacity_for_size(const size_t cur_size, const size_t required_size, const float expansion_factor);
 
 static inline void *element(const vector_t *vector, const size_t index) {
     assert(vector && index < vector->size);
@@ -45,6 +47,7 @@ vector_t *vector_create(const size_t member_size) {
         vector->member_size = member_size;
         vector->size = 0;
         vector->capacity = 0;
+        vector->expansion_factor = 2;
         vector->data = NULL;
     }
     return vector;
@@ -224,16 +227,50 @@ void vector_swap(vector_t *first, vector_t *second) {
     assert(first && second && first->member_size == second->member_size);
     size_t tmp_size = first->size;
     size_t tmp_capacity = first->capacity;
+    float tmp_expansion_factor = first->expansion_factor;
     void *tmp_data = first->data;
     first->size = second->size;
     first->capacity = second->capacity;
     first->data = second->data;
     second->size = tmp_size;
     second->capacity = tmp_capacity;
+    second->expansion_factor = tmp_expansion_factor;
     second->data = tmp_data;
+}
+
+float vector_expansion_factor(const vector_t *vector) {
+    assert(vector);
+    return vector->expansion_factor;
+}
+
+void vector_set_expansion_factor(vector_t *vector, const float expansion_factor) {
+    assert(vector && expansion_factor > 1);
+    vector->expansion_factor = expansion_factor;
+}
+
+size_t vector_capacity_for_size(const vector_t *vector, const size_t size) {
+    assert(vector);
+    return capacity_for_size(vector->capacity, size, vector->expansion_factor);
 }
 
 static void vector_fail(const vector_t *vector, char *format, ...) {
     // TODO: Print the error message with varargs.
     abort();
 }
+
+static size_t capacity_for_size(const size_t cur_capacity,
+                                const size_t required_size,
+                                const float expansion_factor) {
+#if 1
+    return cur_capacity >= required_size ? cur_capacity : required_size;
+#else
+    size_t new_size = cur_size;
+    while (new_size < required_size) {
+        const size_t expanded_size = (size_t)(new_size * expansion_factor);
+        assert(expanded_size > new_size && "Expansion factor too small");
+        new_size = expanded_size;
+    }
+    return new_size;
+#endif
+}
+

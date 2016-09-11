@@ -408,6 +408,28 @@ static void test_swap_with_empty() {
     vector_destroy(vector2);
 }
 
+static void test_expansion_factor() {
+    vector_t *vector = vector_create(sizeof(int));
+    vector_set_expansion_factor(vector, 42);
+    assert(vector_expansion_factor(vector) == 42);
+    vector_destroy(vector);
+}
+
+static void test_capacity_empty() {
+    vector_t *vector = vector_create(sizeof(int));
+    assert(vector_capacity_for_size(vector, 1) >= 1);
+    vector_destroy(vector);
+}
+
+static void test_capacity() {
+    vector_t *vector = vector_create(sizeof(int));
+    vector_reserve(vector, 100);
+    assert(vector_capacity_for_size(vector, 0) == 100);
+    assert(vector_capacity_for_size(vector, 50) == 100);
+    assert(vector_capacity_for_size(vector, 200) >= 200);
+    vector_destroy(vector);
+}
+
 struct test_info_t {
     const char *name;
     test_func_t func;
@@ -449,6 +471,9 @@ int main(int argc, char *argv[]) {
         TEST_INFO_CREATE(test_erase_to_empty),
         TEST_INFO_CREATE(test_swap),
         TEST_INFO_CREATE(test_swap_with_empty),
+        TEST_INFO_CREATE(test_expansion_factor),
+        TEST_INFO_CREATE(test_capacity_empty),
+        TEST_INFO_CREATE(test_capacity),
     };
 
     const size_t num_tests = sizeof(tests) / sizeof(test_info_t);
