@@ -62,7 +62,7 @@ static void test_create() {
     vector_t *vector = vector_create(3);
 
     assert_invariants(vector);
-    assert(vector_member_size(vector) == 3);
+    assert(vector_element_size(vector) == 3);
     assert(vector_empty(vector));
 
     vector_destroy(vector);
@@ -72,7 +72,7 @@ static void test_create_with_size() {
     vector_t *vector = vector_create_with_size(3, 42);
 
     assert_invariants(vector);
-    assert(vector_member_size(vector) == 3);
+    assert(vector_element_size(vector) == 3);
     assert(vector_size(vector) == 42);
 
     vector_destroy(vector);
@@ -84,7 +84,7 @@ static void test_create_with_value() {
     vector_t *vector = vector_create_with_value(sizeof(int), size, &value);
 
     assert_invariants(vector);
-    assert(vector_member_size(vector) == sizeof(int));
+    assert(vector_element_size(vector) == sizeof(int));
     assert(vector_size(vector) == size);
     for (int i = 0; i < size; ++i) {
         assert(*(int *)vector_get(vector, i) == value);
@@ -98,7 +98,7 @@ static void test_convenience_create_with_value() {
     vector_t *vector = VECTOR_CREATE_WITH_VALUE(size, 23);
 
     assert_invariants(vector);
-    assert(vector_member_size(vector) == sizeof(int));
+    assert(vector_element_size(vector) == sizeof(int));
     assert(vector_size(vector) == size);
     for (int i = 0; i < size; ++i) {
         assert(*(int *)vector_get(vector, i) == 23);
@@ -112,7 +112,7 @@ static void test_create_with_values() {
     vector_t *vector = vector_create_with_values(sizeof(int), 3, values);
 
     assert_invariants(vector);
-    assert(vector_member_size(vector) == sizeof(int));
+    assert(vector_element_size(vector) == sizeof(int));
     assert(vector_size(vector) == 3);
     for (int i = 0; i < 3; ++i) {
         assert(*(int *)vector_get(vector, i) == values[i]);

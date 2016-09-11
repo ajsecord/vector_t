@@ -28,14 +28,15 @@ struct vector_t;
 /** An array of fixed-sized members that can grow at runtime, similar to C++'s std::vector. */
 typedef struct vector_t vector_t;
 
-VECTOR_EXTERN vector_t *vector_create(const size_t member_size);
-VECTOR_EXTERN vector_t *vector_create_with_size(const size_t member_size, const size_t size);
-VECTOR_EXTERN vector_t *vector_create_with_value(const size_t member_size, const size_t count, const void *value);
-VECTOR_EXTERN vector_t *vector_create_with_values(const size_t member_size, const size_t count, const void *values);
+
+VECTOR_EXTERN vector_t *vector_create(const size_t element_size);
+VECTOR_EXTERN vector_t *vector_create_with_size(const size_t element_size, const size_t size);
+VECTOR_EXTERN vector_t *vector_create_with_value(const size_t element_size, const size_t count, const void *value);
+VECTOR_EXTERN vector_t *vector_create_with_values(const size_t element_size, const size_t count, const void *values);
 VECTOR_EXTERN vector_t *vector_create_with_vector(const vector_t *other);
 VECTOR_EXTERN void vector_destroy(vector_t *vector);
 
-VECTOR_EXTERN size_t vector_member_size(const vector_t *vector);
+VECTOR_EXTERN size_t vector_element_size(const vector_t *vector);
 VECTOR_EXTERN bool vector_empty(const vector_t *vector);
 VECTOR_EXTERN size_t vector_size(const vector_t *vector);
 VECTOR_EXTERN size_t vector_max_size(const vector_t *vector);

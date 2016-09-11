@@ -28,7 +28,7 @@ static size_t VECTOR_MAX_SIZE = SIZE_MAX;
 static size_t VECTOR_MAX_MESSAGE_SIZE = 256;
 
 struct vector_t {
-    size_t member_size;
+    size_t element_size;
     size_t size;
     size_t capacity;
     float expansion_factor;
@@ -45,14 +45,14 @@ static size_t capacity_for_size(const size_t cur_size, const size_t required_siz
 
 static inline void *element(const vector_t *vector, const size_t index) {
     assert(vector && index < vector->size);
-    return vector->data + index * vector->member_size;
+    return vector->data + index * vector->element_size;
 }
 
-vector_t *vector_create(const size_t member_size) {
-    assert(member_size > 0);
+vector_t *vector_create(const size_t element_size) {
+    assert(element_size > 0);
     vector_t *vector = vector_realloc(NULL, sizeof(vector_t));
     if (vector) {
-        vector->member_size = member_size;
+        vector->element_size = element_size;
         vector->size = 0;
         vector->capacity = 0;
         vector->expansion_factor = 2;
@@ -61,42 +61,42 @@ vector_t *vector_create(const size_t member_size) {
     return vector;
 }
 
-vector_t *vector_create_with_size(const size_t member_size, const size_t size) {
-    vector_t *vector = vector_create(member_size);
+vector_t *vector_create_with_size(const size_t element_size, const size_t size) {
+    vector_t *vector = vector_create(element_size);
     if (vector) {
         vector_resize(vector, size);
     }
     return vector;
 }
 
-vector_t *vector_create_with_value(const size_t member_size, const size_t count, const void *value) {
+vector_t *vector_create_with_value(const size_t element_size, const size_t count, const void *value) {
     assert(count == 0 || value);
-    vector_t *vector = vector_create(member_size);
+    vector_t *vector = vector_create(element_size);
     if (vector) {
         vector_resize(vector, count);
         for (size_t i = 0; i < count; ++i) {
-            vector_memcpy(element(vector, i), value, member_size);
+            vector_memcpy(element(vector, i), value, element_size);
         }
     }
     return vector;
 }
 
-vector_t *vector_create_with_values(const size_t member_size, const size_t count, const void *values) {
+vector_t *vector_create_with_values(const size_t element_size, const size_t count, const void *values) {
     assert(count == 0 || values);
-    vector_t *vector = vector_create(member_size);
+    vector_t *vector = vector_create(element_size);
     if (vector) {
         vector_resize(vector, count);
-        vector_memcpy(vector->data, values, count * member_size);
+        vector_memcpy(vector->data, values, count * element_size);
     }
     return vector;
 }
 
 vector_t *vector_create_with_vector(const vector_t *other) {
     assert(other);
-    vector_t *vector = vector_create(other->member_size);
+    vector_t *vector = vector_create(other->element_size);
     if (vector) {
         vector_resize(vector, other->size);
-        vector_memcpy(vector->data, other->data, other->size * other->member_size);
+        vector_memcpy(vector->data, other->data, other->size * other->element_size);
     }
     return vector;
 }
@@ -106,9 +106,9 @@ void vector_destroy(vector_t *vector) {
     vector_free(vector);
 }
 
-size_t vector_member_size(const vector_t *vector) {
+size_t vector_element_size(const vector_t *vector) {
     assert(vector);
-    return vector->member_size;
+    return vector->element_size;
 }
 
 bool vector_empty(const vector_t *vector) {
@@ -134,9 +134,9 @@ size_t vector_capacity(const vector_t *vector) {
 void vector_reserve(vector_t *vector, const size_t capacity) {
     assert(vector);
     if (vector->capacity < capacity) {
-        void *new_data = vector_realloc(vector->data, vector->member_size * capacity);
+        void *new_data = vector_realloc(vector->data, vector->element_size * capacity);
         if (!new_data) {
-            vector_abort(vector, "Could not allocate %u bytes.", vector->member_size * capacity);
+            vector_abort(vector, "Could not allocate %u bytes.", vector->element_size * capacity);
             return;
         }
         vector->data = new_data;
@@ -159,10 +159,10 @@ void vector_resize(vector_t *vector, const size_t size) {
 void vector_size_to_fit(vector_t *vector) {
     assert(vector);
     if (vector->capacity > vector->size) {
-        void *new_data = vector_realloc(vector->data, vector->size * vector->member_size);
+        void *new_data = vector_realloc(vector->data, vector->size * vector->element_size);
         if (!new_data) {
             vector_abort(vector, "Could not shrink allocation to %u bytes.",
-                        vector->member_size * vector->member_size);
+                        vector->element_size * vector->element_size);
             return;
         }
         vector->capacity = vector->size;
@@ -176,7 +176,7 @@ void *vector_get(const vector_t *vector, const size_t index) {
 
 void vector_set(vector_t *vector, const size_t index, const void *value) {
     assert(vector && value && index < vector->size);
-    vector_memcpy(element(vector, index), value, vector->member_size);
+    vector_memcpy(element(vector, index), value, vector->element_size);
 }
 
 void *vector_front(const vector_t *vector) {
@@ -198,7 +198,7 @@ void vector_push_back(vector_t *vector, const void* value) {
     assert(vector && value);
     const size_t new_capacity = vector_capacity_for_size(vector, ++vector->size);
     vector_reserve(vector, new_capacity);
-    vector_memcpy(element(vector, vector->size - 1), value, vector->member_size);
+    vector_memcpy(element(vector, vector->size - 1), value, vector->element_size);
 }
 
 void vector_pop_back(vector_t *vector) {
@@ -214,18 +214,18 @@ void vector_insert(vector_t *vector, const size_t pos, const void *value) {
     vector_reserve(vector, new_capacity);
     if (pos <= vector->size) {
         ++vector->size;
-        const size_t byte_count = (vector->size - 1) * vector->member_size;
+        const size_t byte_count = (vector->size - 1) * vector->element_size;
         if (byte_count > 0) {
             vector_memmove(element(vector, pos + 1), element(vector, pos), byte_count);
         }
-        vector_memcpy(element(vector, pos), value, vector->member_size);
+        vector_memcpy(element(vector, pos), value, vector->element_size);
     }
 }
 
 void vector_erase(vector_t *vector, const size_t pos) {
     assert(vector && pos <= vector->size);
     if (pos < vector->size) {
-        const size_t byte_count = (vector->size - 1) * vector->member_size;
+        const size_t byte_count = (vector->size - 1) * vector->element_size;
         if (byte_count > 0) {
             vector_memmove(element(vector, pos), element(vector, pos + 1), byte_count);
         }
@@ -234,7 +234,7 @@ void vector_erase(vector_t *vector, const size_t pos) {
 }
 
 void vector_swap(vector_t *first, vector_t *second) {
-    assert(first && second && first->member_size == second->member_size);
+    assert(first && second && first->element_size == second->element_size);
     size_t tmp_size = first->size;
     size_t tmp_capacity = first->capacity;
     float tmp_expansion_factor = first->expansion_factor;
