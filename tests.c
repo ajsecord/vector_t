@@ -14,12 +14,12 @@
  limitations under the License.
  */
 
+#include <assert.h>
+#include <stdio.h>
+
 #include "vector.h"
 #include "vector_convenience_accessors.h"
 #include "vector_system.h"
-
-#include <assert.h>
-#include <stdio.h>
 
 typedef void (*test_func_t)(void);
 
@@ -32,12 +32,6 @@ static inline void assert_invariants(const vector_t *vector) {
 static bool ABORT_FUNC_CALLED = false;
 static void abort_func(const vector_t *vector, const char *message) {
     ABORT_FUNC_CALLED = true;
-}
-
-static bool REALLOC_FUNC_CALLED = false;
-static void *realloc_func(void *ptr, size_t size) {
-    REALLOC_FUNC_CALLED = true;
-    return vector_default_global_realloc_func(ptr, size);
 }
 
 static bool FREE_FUNC_CALLED = false;
@@ -56,6 +50,18 @@ static bool MEMMOVE_FUNC_CALLED = false;
 void *memmove_func(void *dst, const void *src, size_t len) {
     MEMMOVE_FUNC_CALLED = true;
     return vector_default_global_memmove_func(dst, src, len);
+}
+
+static bool REALLOC_FUNC_CALLED = false;
+static void *realloc_func(void *ptr, size_t size) {
+    REALLOC_FUNC_CALLED = true;
+    return vector_default_global_realloc_func(ptr, size);
+}
+
+static bool VFPRINTF_FUNC_CALLED = false;
+static int vfprintf_func(FILE * restrict stream, const char * restrict format, va_list ap) {
+    VFPRINTF_FUNC_CALLED = true;
+    return 0;
 }
 
 static void test_create() {
@@ -438,6 +444,8 @@ static void test_swap_with_empty() {
     vector_destroy(vector2);
 }
 
+// Advanced
+
 static void test_expansion_factor() {
     vector_t *vector = vector_create(sizeof(int));
     vector_set_expansion_factor(vector, 42);
@@ -460,8 +468,13 @@ static void test_capacity() {
     vector_destroy(vector);
 }
 
+// System interactions
+
 static void test_custom_abort_func() {
     vector_t *vector = vector_create(sizeof(int));
+
+    // Aesthetics: silence the normal error message that gets printed here.
+    vector_set_global_vfprintf_func(vfprintf_func);
 
     ABORT_FUNC_CALLED = false;
     vector_set_global_abort_func(abort_func);
@@ -469,6 +482,7 @@ static void test_custom_abort_func() {
     assert(ABORT_FUNC_CALLED == true);
 
     vector_set_global_abort_func(vector_default_global_abort_func);
+    vector_set_global_vfprintf_func(vector_default_global_vfprintf_func);
     vector_destroy(vector);
 }
 
@@ -521,6 +535,22 @@ static void test_custom_memmove_func() {
     vector_destroy(vector);
 }
 
+static void test_custom_vfprintf_func() {
+    vector_t *vector = vector_create(sizeof(int));
+
+    // Testing only: disable the global abort function so testing will continue.
+    vector_set_global_abort_func(abort_func);
+
+    VFPRINTF_FUNC_CALLED = false;
+    vector_set_global_vfprintf_func(vfprintf_func);
+    vector_reserve(vector, vector_max_size(vector));  // Force an abort.
+    assert(VFPRINTF_FUNC_CALLED == true);
+
+    vector_set_global_abort_func(vector_default_global_abort_func);
+    vector_set_global_vfprintf_func(vector_default_global_vfprintf_func);
+    vector_destroy(vector);
+}
+
 struct test_info_t {
     const char *name;
     test_func_t func;
@@ -566,10 +596,11 @@ int main(int argc, char *argv[]) {
         TEST_INFO_CREATE(test_capacity_empty),
         TEST_INFO_CREATE(test_capacity),
         TEST_INFO_CREATE(test_custom_abort_func),
-        TEST_INFO_CREATE(test_custom_realloc_func),
         TEST_INFO_CREATE(test_custom_free_func),
         TEST_INFO_CREATE(test_custom_memcpy_func),
         TEST_INFO_CREATE(test_custom_memmove_func),
+        TEST_INFO_CREATE(test_custom_realloc_func),
+        TEST_INFO_CREATE(test_custom_vfprintf_func),
     };
 
     const size_t num_tests = sizeof(tests) / sizeof(test_info_t);

@@ -16,15 +16,17 @@
 
 #include "vector_system.h"
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 static vector_abort_func_t global_abort_func = vector_default_global_abort_func;
-static vector_realloc_func_t global_realloc_func = vector_default_global_realloc_func;
 static vector_free_func_t global_free_func = vector_default_global_free_func;
 static vector_memcpy_func_t global_memcpy_func = vector_default_global_memcpy_func;
 static vector_memmove_func_t global_memmove_func = vector_default_global_memmove_func;
+static vector_realloc_func_t global_realloc_func = vector_default_global_realloc_func;
+static vector_vfprintf_func_t global_vfprintf_func = vector_default_global_vfprintf_func;
 
 vector_abort_func_t vector_get_global_abort_func(void) {
     return global_abort_func;
@@ -34,21 +36,8 @@ void vector_set_global_abort_func(const vector_abort_func_t abort_func) {
     global_abort_func = abort_func;
 }
 
-void vector_default_global_abort_func(const vector_t *vector, const char* message) {
-    fprintf(stderr, "%s\n", message);
+void vector_default_global_abort_func() {
     abort();
-}
-
-vector_realloc_func_t vector_get_global_realloc_func(void) {
-    return global_realloc_func;
-}
-
-void vector_set_global_realloc_func(const vector_realloc_func_t realloc_func) {
-    global_realloc_func = realloc_func;
-}
-
-void *vector_default_global_realloc_func(void *ptr, size_t size) {
-    return realloc(ptr, size);
 }
 
 vector_free_func_t vector_get_global_free_func(void) {
@@ -85,5 +74,29 @@ void vector_set_global_memmove_func(const vector_memmove_func_t memmove_func) {
 
 void *vector_default_global_memmove_func(void *dst, const void *src, size_t len) {
     return memmove(dst, src, len);
+}
+
+vector_vfprintf_func_t vector_get_global_vfprintf_func(void) {
+    return global_vfprintf_func;
+}
+
+void vector_set_global_vfprintf_func(const vector_vfprintf_func_t vfprintf_func) {
+    global_vfprintf_func = vfprintf_func;
+}
+
+int vector_default_global_vfprintf_func(FILE * restrict stream, const char * restrict format, va_list ap) {
+    return vfprintf(stream, format, ap);
+}
+
+vector_realloc_func_t vector_get_global_realloc_func(void) {
+    return global_realloc_func;
+}
+
+void vector_set_global_realloc_func(const vector_realloc_func_t realloc_func) {
+    global_realloc_func = realloc_func;
+}
+
+void *vector_default_global_realloc_func(void *ptr, size_t size) {
+    return realloc(ptr, size);
 }
 

@@ -18,14 +18,11 @@
 #include "vector_system.h"
 
 #include <assert.h>
-#include <stdarg.h>
 #include <stdint.h>
-#include <stdio.h>
 
 // TODO: Audit each function for what happens if the assert() condition fails in release mode.
 
-static size_t VECTOR_MAX_SIZE = SIZE_MAX;
-static size_t VECTOR_MAX_MESSAGE_SIZE = 256;
+static const size_t VECTOR_MAX_SIZE = SIZE_MAX;
 
 struct vector_t {
     size_t element_size;
@@ -35,11 +32,12 @@ struct vector_t {
     void *data;
 };
 
-static void vector_abort(const vector_t *vector, char *format, ...);
-static void *vector_realloc(void *ptr, const size_t size);
+static void vector_abort();
 static void vector_free(void *ptr);
 static void *vector_memcpy(void *restrict dst, const void *restrict src, size_t n);
 static void *vector_memmove(void *dst, const void *src, size_t len);
+static void *vector_realloc(void *ptr, const size_t size);
+static void vector_fprintf(FILE * restrict stream, const char * restrict format, ...);
 
 static size_t capacity_for_size(const size_t cur_size, const size_t required_size, const float expansion_factor);
 
@@ -136,7 +134,8 @@ void vector_reserve(vector_t *vector, const size_t capacity) {
     if (vector->capacity < capacity) {
         void *new_data = vector_realloc(vector->data, vector->element_size * capacity);
         if (!new_data) {
-            vector_abort(vector, "Could not allocate %u bytes.", vector->element_size * capacity);
+            vector_fprintf(stderr, "Could not allocate %u bytes.", vector->element_size * capacity);
+            vector_abort();
             return;
         }
         vector->data = new_data;
@@ -161,8 +160,10 @@ void vector_size_to_fit(vector_t *vector) {
     if (vector->capacity > vector->size) {
         void *new_data = vector_realloc(vector->data, vector->size * vector->element_size);
         if (!new_data) {
-            vector_abort(vector, "Could not shrink allocation to %u bytes.",
-                        vector->element_size * vector->element_size);
+            vector_fprintf(stderr,
+                           "Could not shrink allocation to %u bytes.",
+                           vector->element_size * vector->element_size);
+            vector_abort();
             return;
         }
         vector->capacity = vector->size;
@@ -263,37 +264,44 @@ size_t vector_capacity_for_size(const vector_t *vector, const size_t size) {
     return capacity_for_size(vector->capacity, size, vector->expansion_factor);
 }
 
-static void vector_abort(const vector_t *vector, char *format, ...) {
-    char message[VECTOR_MAX_MESSAGE_SIZE];
-
-    va_list argp;
-    va_start(argp, format);
-    vsnprintf(message, VECTOR_MAX_MESSAGE_SIZE, format, argp);
-    va_end(argp);
-
+static void vector_abort(const vector_t *vector) {
     vector_abort_func_t abort_func = vector_get_global_abort_func();
     assert(abort_func);
-    abort_func(vector, message);
-}
-
-static void *vector_realloc(void *ptr, const size_t size) {
-    vector_realloc_func_t realloc_func = vector_get_global_realloc_func();
-    return realloc_func(ptr, size);
+    abort_func();
 }
 
 static void vector_free(void *ptr) {
     vector_free_func_t free_func = vector_get_global_free_func();
+    assert(free_func);
     free_func(ptr);
 }
 
 static void *vector_memcpy(void *restrict dst, const void *restrict src, size_t n) {
     vector_memcpy_func_t memcpy_func = vector_get_global_memcpy_func();
+    assert(memcpy_func);
     return memcpy_func(dst, src, n);
 }
 
 static void *vector_memmove(void *dst, const void *src, size_t len) {
     vector_memmove_func_t memmove_func = vector_get_global_memmove_func();
+    assert(memmove_func);
     return memmove_func(dst, src, len);
+}
+
+static void *vector_realloc(void *ptr, const size_t size) {
+    vector_realloc_func_t realloc_func = vector_get_global_realloc_func();
+    assert(realloc_func);
+    return realloc_func(ptr, size);
+}
+
+static void vector_fprintf(FILE * restrict stream, const char * restrict format, ...) {
+    vector_vfprintf_func_t vfprintf_func = vector_get_global_vfprintf_func();
+    if (vfprintf_func) {
+        va_list arg_pointers;
+        va_start(arg_pointers, format);
+        vfprintf_func(stream, format, arg_pointers);
+        va_end(arg_pointers); 
+    }
 }
 
 // TODO: Expose this as an advanced global function the user can replace.

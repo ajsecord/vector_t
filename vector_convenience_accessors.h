@@ -46,7 +46,7 @@
  */
 #define VECTOR_GET(vector, index, type) \
     ({ \
-    assert(vector_get_member_size(vector) == sizeof(type)); \
+    assert(vector_element_size(vector) == sizeof(type)); \
     (*(type *)vector_get(vector, index)); \
     })
 
@@ -61,7 +61,7 @@
  */
 #define VECTOR_SET(vector, index, value) \
     { \
-    assert(vector_get_member_size(vector) == sizeof(type)); \
+    assert(vector_element_size(vector) == sizeof(value)); \
     __typeof__ (value) _tmp = (value); \
     vector_set(vector, index, &_tmp); \
     }
@@ -78,7 +78,7 @@
  */
 #define VECTOR_FRONT(vector, type) \
     ({ \
-    assert(vector_get_member_size(vector) == sizeof(type)); \
+    assert(vector_element_size(vector) == sizeof(type)); \
     (*(type *)vector_front(vector)); \
     })
 
@@ -94,7 +94,7 @@
  */
 #define VECTOR_BACK(vector, type) \
     ({ \
-    assert(vector_get_member_size(vector) == sizeof(type)); \
+    assert(vector_element_size(vector) == sizeof(type)); \
     (*(type *)vector_back(vector)); \
     })
 
@@ -108,7 +108,7 @@
  */
 #define VECTOR_PUSH_BACK(vector, value) \
     { \
-    assert(vector_get_member_size(vector) == sizeof(type)); \
+    assert(vector_element_size(vector) == sizeof(value)); \
     __typeof__ (value) _tmp = (value); \
     vector_push_back(vector, &_tmp); \
     }
@@ -126,7 +126,7 @@
  */
 #define VECTOR_INSERT(vector, pos, value) \
     { \
-    assert(vector_get_member_size(vector) == sizeof(type)); \
+    assert(vector_element_size(vector) == sizeof(value)); \
     __typeof__ (value) _tmp = (value); \
     vector_insert(vector, pos, &_tmp); \
     }

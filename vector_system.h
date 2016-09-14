@@ -17,21 +17,21 @@
 #ifndef VECTOR_SYSTEM_H
 #define VECTOR_SYSTEM_H
 
+#include <stdarg.h>
+#include <stdio.h>
+
 #include "vector.h"
 
-typedef void (*vector_abort_func_t)(const vector_t *vector, const char *message);
-typedef void *(*vector_realloc_func_t)(void *ptr, size_t size);
+typedef void (*vector_abort_func_t)();
 typedef void (*vector_free_func_t)(void *ptr);
 typedef void *(*vector_memcpy_func_t)(void *restrict dst, const void *restrict src, size_t n);
 typedef void *(*vector_memmove_func_t)(void *dst, const void *src, size_t len);
+typedef void *(*vector_realloc_func_t)(void *ptr, size_t size);
+typedef int (*vector_vfprintf_func_t)(FILE * restrict stream, const char * restrict format, va_list ap);
 
 VECTOR_EXTERN vector_abort_func_t vector_get_global_abort_func(void);
 VECTOR_EXTERN void vector_set_global_abort_func(const vector_abort_func_t abort_func);
-VECTOR_EXTERN void vector_default_global_abort_func(const vector_t *vector, const char* message);
-
-VECTOR_EXTERN vector_realloc_func_t vector_get_global_realloc_func(void);
-VECTOR_EXTERN void vector_set_global_realloc_func(const vector_realloc_func_t realloc_func);
-VECTOR_EXTERN void *vector_default_global_realloc_func(void *ptr, size_t size);
+VECTOR_EXTERN void vector_default_global_abort_func();
 
 VECTOR_EXTERN vector_free_func_t vector_get_global_free_func(void);
 VECTOR_EXTERN void vector_set_global_free_func(const vector_free_func_t free_func);
@@ -44,5 +44,13 @@ VECTOR_EXTERN void *vector_default_global_memcpy_func(void *restrict dst, const 
 VECTOR_EXTERN vector_memmove_func_t vector_get_global_memmove_func(void);
 VECTOR_EXTERN void vector_set_global_memmove_func(const vector_memmove_func_t memmove_func);
 VECTOR_EXTERN void *vector_default_global_memmove_func(void *dst, const void *src, size_t len);
+
+VECTOR_EXTERN vector_realloc_func_t vector_get_global_realloc_func(void);
+VECTOR_EXTERN void vector_set_global_realloc_func(const vector_realloc_func_t realloc_func);
+VECTOR_EXTERN void *vector_default_global_realloc_func(void *ptr, size_t size);
+
+VECTOR_EXTERN vector_vfprintf_func_t vector_get_global_vfprintf_func(void);
+VECTOR_EXTERN void vector_set_global_vfprintf_func(const vector_vfprintf_func_t vfprintf_func);
+VECTOR_EXTERN int vector_default_global_vfprintf_func(FILE * restrict stream, const char * restrict format, va_list ap);
 
 #endif
