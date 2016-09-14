@@ -17,16 +17,47 @@
 #ifndef VECTOR_SYSTEM_H
 #define VECTOR_SYSTEM_H
 
+/**
+ @file vector_system.h
+
+ Interactions with the underlying system (optional).
+
+ It is occasionally useful to control a library's interactions with the underlying runtime system,
+ for example, memory allocation, printing error messages, etc. The vector_t library allows you to
+ redefine the methods it uses for:
+
+ - Memory allocation and deallocation,
+ - Aborting in situations where the library can't continue, and,
+ - Printing error messages.
+
+ The functions in this file allow you to redefine these methods and provides the default functions
+ vector_t uses. The default functions simply call the standard C99 functions, for example, @c
+ vector_default_global_abort_func() calls @c abort().
+
+ Everything in this file is optional and not needed for normal usage.
+ */
+ 
 #include <stdarg.h>
 #include <stdio.h>
 
 #include "vector.h"
 
+/** A function that causes abnormal program termination, similar to abort(3). */
 typedef void (*vector_abort_func_t)();
+
+/** A function that frees memory allocations, similar to free(3). */
 typedef void (*vector_free_func_t)(void *ptr);
+
+/** A function that copies memory, similar to memcpy(3). */ 
 typedef void *(*vector_memcpy_func_t)(void *restrict dst, const void *restrict src, size_t n);
+
+/** A function that moves memory, similar to memmove(3). */
 typedef void *(*vector_memmove_func_t)(void *dst, const void *src, size_t len);
+
+/** A function that attempts to reallocate a memory block, similar to realloc(3). */
 typedef void *(*vector_realloc_func_t)(void *ptr, size_t size);
+
+/** A function that prints a formatted string to a stream with a variadic argument list, similar to vfprintf(3). */
 typedef int (*vector_vfprintf_func_t)(FILE * restrict stream, const char * restrict format, va_list ap);
 
 VECTOR_EXTERN vector_abort_func_t vector_get_global_abort_func(void);
