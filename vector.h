@@ -17,6 +17,12 @@
 #ifndef VECTOR_VECTOR_H
 #define VECTOR_VECTOR_H
 
+/**
+ @file vector.h
+ 
+ A variable-length array of fixed-sized objects, similar to C++'s std::vector.
+ */
+
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -142,6 +148,8 @@ VECTOR_EXTERN size_t vector_capacity(const vector_t *vector);
  
  The resulting capacity may be greater than requested. If memory allocation fails,
  the global handler returned by @c vector_get_global_abort_func() is called.
+ 
+ Invalidates element pointers if @c capacity is greater than the current capacity.
 
  @param vector   A vector.
  @param capacity The new capacity.
@@ -151,6 +159,8 @@ VECTOR_EXTERN void vector_reserve(vector_t *vector, const size_t capacity);
 /**
  Remove all elements from a vector.
 
+ Invalidates element pointers.
+
  @param vector A vector.
  */
 VECTOR_EXTERN void vector_clear(vector_t *vector);
@@ -159,6 +169,8 @@ VECTOR_EXTERN void vector_clear(vector_t *vector);
  Resize a vector.
  
  If @c size is greater than the vector's current size, the new elements will be uninitialized.
+ 
+ Invalidates element pointers if @c size is greater than the current capacity.
 
  @param vector A vector.
  @param size   The new size.
@@ -169,6 +181,8 @@ VECTOR_EXTERN void vector_resize(vector_t *vector, const size_t size);
  Resize the a vector's internal storage to fit its size.
  
  The vector's capacity will be reduced to the minimum required to store the elements in the vector.
+
+ Invalidates element pointers if the capacity is greater than the size.
 
  @param vector A vector.
  */
@@ -213,6 +227,10 @@ VECTOR_EXTERN void *vector_back(const vector_t *vector);
 
 /**
  Return a pointer to a vector's storage.
+ 
+ The returned pointer is valid until a reallocation occurs. See the other functions for the
+ conditions under which element pointers are invalidated. The @c vector_reserve() function can be
+ used to control when reallocation occurs.
 
  @param vector A vector.
  
@@ -222,6 +240,8 @@ VECTOR_EXTERN void *vector_data(const vector_t *vector);
 
 /**
  Append an element to a vector, increasing its size by one.
+ 
+ Invalidates element pointers if the current size plus one is less than the capacity.
 
  @param vector A vector.
  @param value  A pointer to the new value of at least @c member_size bytes.
@@ -239,6 +259,8 @@ VECTOR_EXTERN void vector_pop_back(vector_t *vector);
  Insert an element into a vector.
  
  Elements with positions greater than @c pos will be shifted to make room for the new element.
+
+ Invalidates element pointers if the current size plus one is less than the capacity.
 
  @param vector A vector.
  @param pos    The index of the new element.
@@ -258,6 +280,8 @@ VECTOR_EXTERN void vector_erase(vector_t *vector, const size_t pos);
  Swap the contents of two vectors.
  
  The contents are swapped with no copying or reallocation.
+ 
+ Element pointers are not invalidated, but will point to the swapped contents.
 
  @param first  The first vector.
  @param second The second vector.

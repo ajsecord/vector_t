@@ -18,6 +18,14 @@
 #define VECTOR_CONVENIENCE_ACCESSORS_H
 
 /**
+ @file vector_convenience_accessors.h
+ 
+ Access vector elements by value instead of reference.
+ 
+ Requires macros in C, since the language doesn't work with type information.
+ */
+
+/**
  Create a vector of @c count copies of @c value.
  
  The vector's @c member_size is initialized to @c sizeof(value).
