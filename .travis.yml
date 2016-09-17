@@ -2,7 +2,7 @@ language: c
 compiler:
   - clang
   - gcc
-script: cd build_systems/make && make && ./tests
+script: cd build_systems/make && make && debug/tests
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 
