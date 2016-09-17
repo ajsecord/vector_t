@@ -1,5 +1,7 @@
 language: c
-compiler: clang
+compiler:
+  - clang
+  - gcc
 script: cd build_systems/make && make && ./tests
 
 
