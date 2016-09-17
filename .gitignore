@@ -32,5 +32,9 @@
 *.dSYM/
 *.su
 
+# Coverage files
+*.gcda
+*.gcno
+
 # Test binaries
 tests

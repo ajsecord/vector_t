@@ -3,5 +3,6 @@ compiler:
   - clang
   - gcc
 script: cd build_systems/make && make && ./tests
-
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
 
