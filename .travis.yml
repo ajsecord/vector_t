@@ -4,5 +4,5 @@ compiler:
   - gcc
 script: cd build_systems/make && make && debug/tests
 after_success:
-  - cd build_systems/make/debug && bash <(curl -s https://codecov.io/bash)
+  - cd debug && bash <(curl -s https://codecov.io/bash)
 
