@@ -1,12 +1,11 @@
-VPATH=../..
-SOURCES=vector.c vector_system.c
-OBJECTS=$(SOURCES:.c=.o)
-CFLAGS=-std=c99 -Wall -Werror -O0 -g -coverage
-tests: tests.o libvector.a
-	$(CC) $(CFLAGS) $^ -o $@
+.PHONY: all clean
 
-libvector.a: $(OBJECTS)
-	ar rcs $@ $^
+export CFLAGS := -std=c99 -Wall -Werror
+
+all:
+	$(MAKE) -C debug
+	$(MAKE) -C release
 
 clean:
-	rm -f tests libvector.a $(OBJECTS)
+	$(MAKE) -C debug clean
+	$(MAKE) -C release clean
