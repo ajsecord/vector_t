@@ -5,7 +5,7 @@ CFLAGS += -O3
 
 all: tests libvector.a
 
-tests: libvector.a tests.o
+tests: tests.o libvector.a
 	$(CC) $(CFLAGS) $^ -o $@
 
 libvector.a: vector.o vector_system.o
