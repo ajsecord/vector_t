@@ -158,14 +158,14 @@ void vector_resize(vector_t *vector, const size_t size) {
 void vector_size_to_fit(vector_t *vector) {
     assert(vector);
     if (vector->capacity > vector->size) {
-        void *new_data = vector_realloc(vector->data, vector->size * vector->element_size);
-        if (!new_data) {
-            vector_fprintf(stderr,
-                           "Could not shrink allocation to %u bytes.",
-                           vector->element_size * vector->element_size);
+        size_t num_bytes = vector->size * vector->element_size;
+        void *new_data = vector_realloc(vector->data, num_bytes);
+        if (num_bytes > 0 && !new_data) {
+            vector_fprintf(stderr, "Could not shrink allocation to %u bytes.", num_bytes);
             vector_abort();
             return;
         }
+        vector->data = new_data;
         vector->capacity = vector->size;
     }
     assert(vector->capacity == vector->size);
