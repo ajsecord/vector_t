@@ -58,6 +58,10 @@ static void *realloc_func(void *ptr, size_t size) {
     return vector_default_global_realloc_func(ptr, size);
 }
 
+static void *always_failing_realloc_func(void *ptr, size_t size) {
+    return NULL;
+}
+
 static bool VFPRINTF_FUNC_CALLED = false;
 static int vfprintf_func(FILE * restrict stream, const char * restrict format, va_list ap) {
     VFPRINTF_FUNC_CALLED = true;
@@ -202,6 +206,30 @@ static void test_size_to_fit() {
 
     vector_size_to_fit(vector);
     assert(vector_capacity(vector) == vector_size(vector));
+
+    vector_destroy(vector);
+}
+
+static void test_size_to_fit_fail() {
+    int value = 42;
+    vector_t *vector = vector_create_with_value(sizeof(int), 10, &value);
+    vector_reserve(vector, 100);
+
+    ABORT_FUNC_CALLED = false;
+    VFPRINTF_FUNC_CALLED = false;
+    vector_set_global_abort_func(abort_func);
+    vector_set_global_vfprintf_func(vfprintf_func);
+
+    // Force a failure of the realloc() function.
+    vector_set_global_realloc_func(always_failing_realloc_func);
+    vector_size_to_fit(vector);
+
+    assert(ABORT_FUNC_CALLED == true);
+    assert(VFPRINTF_FUNC_CALLED == true);
+
+    vector_set_global_abort_func(vector_default_global_abort_func);
+    vector_set_global_realloc_func(vector_default_global_realloc_func);
+    vector_set_global_vfprintf_func(vector_default_global_vfprintf_func);
 
     vector_destroy(vector);
 }
@@ -589,6 +617,7 @@ int main(int argc, char *argv[]) {
         TEST_INFO_CREATE(test_resize_up),
         TEST_INFO_CREATE(test_resize_down),
         TEST_INFO_CREATE(test_size_to_fit),
+        TEST_INFO_CREATE(test_size_to_fit_fail),
         TEST_INFO_CREATE(test_set),
         TEST_INFO_CREATE(test_convenience_get),
         TEST_INFO_CREATE(test_convenience_set),
