@@ -127,6 +127,22 @@ static void test_create_with_values() {
     vector_destroy(vector);
 }
 
+static void test_create_with_vector() {
+    const int values[] = { 42, 23, 7 };
+    vector_t *first = vector_create_with_values(sizeof(int), 3, values);
+    vector_t *second = vector_create_with_vector(first);
+    
+    assert_invariants(second);
+    assert(vector_element_size(second) == vector_element_size(first));
+    assert(vector_size(second) == vector_size(first));
+    for (int i = 0; i < vector_size(second); ++i) {
+        assert(*(int *)vector_get(second, i) == *(int *)vector_get(first, i));
+    }
+
+    vector_destroy(first);
+    vector_destroy(second);
+}
+
 static void test_reserve() {
     vector_t *vector = vector_create(sizeof(int));
     vector_reserve(vector, 100);
@@ -567,6 +583,7 @@ int main(int argc, char *argv[]) {
         TEST_INFO_CREATE(test_create_with_value),
         TEST_INFO_CREATE(test_convenience_create_with_value),
         TEST_INFO_CREATE(test_create_with_values),
+        TEST_INFO_CREATE(test_create_with_vector),
         TEST_INFO_CREATE(test_reserve),
         TEST_INFO_CREATE(test_clear),
         TEST_INFO_CREATE(test_resize_up),
