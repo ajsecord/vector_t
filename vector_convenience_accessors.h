@@ -17,12 +17,18 @@
 #ifndef VECTOR_CONVENIENCE_ACCESSORS_H
 #define VECTOR_CONVENIENCE_ACCESSORS_H
 
+#include <assert.h>
+
 /**
  @file vector_convenience_accessors.h
  
  Access vector elements by value instead of reference.
  
  Requires macros in C, since the language doesn't work with type information.
+ 
+ The macros in this file (only) require the following common C extensions:
+ - The typeof() operator, see https://gcc.gnu.org/onlinedocs/gcc/Typeof.html
+ - Statement expressions, see https://gcc.gnu.org/onlinedocs/gcc/Statement-Exprs.html
  */
 
 /**
