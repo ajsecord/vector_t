@@ -16,9 +16,9 @@ it, but this one is mine.
 
 ## Compilation environment
 
-`vector_t` only requires a [C99](https://en.wikipedia.org/wiki/C99) compiler and has no external
-dependencies. [Clang](http://clang.llvm.org/) and [GCC](https://gcc.gnu.org/) are specifically
-tested.
+Except for the optional `vector_convenience_accessors.h` macros, `vector_t` only requires a
+[C99](https://en.wikipedia.org/wiki/C99) compiler and has no external dependencies.
+[Clang](http://clang.llvm.org/) and [GCC](https://gcc.gnu.org/) are specifically tested.
 
 ## Convenience accessors
 
